@@ -1,8 +1,11 @@
 library(ggplot2)
 library(MASS)
 
-data <- read.table("data05.txt", header=FALSE, col.names = "x")
+# Load data
+data <- read.table("data05.txt", header = FALSE, col.names = "x")
 
+
+# Plot histogram
 g <- ggplot(data)
 hist <- geom_histogram(
     aes(x = x, y = after_stat(density)), 
@@ -13,16 +16,21 @@ hist <- geom_histogram(
   )
 g + hist
 
-# Presented histogram is not symmetrical, it possesses long right tail, therefore data is neither 
-# from a Gaussian distribution nor Cauchy distribution. As the values are in <0;1> range the Gamma
+# Presented histogram is not symmetrical, it possesses long right tail, 
+# therefore data is neither from a Gaussian nor from a Cauchy distribution. 
+# As the values are in <0;1> range with maximum at approx. 0.3-0.35 the Gamma 
 # distribution is also unlikely.
 # Conclusion: Data probably represents a Beta distribution
 
+
+# Shapiro-Wilk normality test
 shapiro.test(data$x)
 
-# p-value << 0.05 so therefore we reject the hypothesis that the data comes from 
+# p-value << 0.05 so therefore we reject the hypothesis that the data come from 
 # a normal (Gaussian) distribution
 
+
+# Fit distributions
 fit.cauchy <- fitdistr(data$x, "cauchy")
 fit.cauchy$loglik
 
@@ -42,9 +50,11 @@ fit.beta$loglik
 fit.gamma  <- fitdistr(data$x, "gamma")
 fit.gamma$loglik
 
-# The higher loglik the higher likelihood of data coming from the tested distribution
-# Here the maximal LL value is obtained for a Beta distribution, therefor it is the most probable
+# The Beta distribution has the highest log-likelihood among the fitted
+# models, therefore it provides the best fit
 
+
+# Kolmogorov-Smirnov test
 ks.test(data$x, "pcauchy",
         location = fit.cauchy$estimate["location"],
         scale    = fit.cauchy$estimate["scale"])
@@ -61,8 +71,11 @@ ks.test(data$x, "pgamma",
         shape = fit.gamma$estimate["shape"],
         rate  = fit.gamma$estimate["rate"])
 
-# Only Beta distribution has p-value > 0.05, therefore it is the only hypothesis we cannot reject
+# Only the Beta distribution has p-value > 0.05
+# Therefore it is the only hypothesis we cannot reject
 
+
+# Plot histogram with fitted theoretical Beta probability density
 g + hist +
   stat_function(
     fun = dbeta,
